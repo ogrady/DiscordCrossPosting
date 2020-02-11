@@ -1,0 +1,19 @@
+{
+  "name": "discordcrossposter",
+  "version": "1.0.0",
+  "description": "Bot to post messages between Discord servers.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "tsc": "tsc"
+  },
+  "author": "Len",
+  "license": "ISC",
+  "dependencies": {
+    "@types/node": "^13.7.0",
+    "better-sqlite3": "^5.4.3",
+    "discord-akairo": "^7.5.6",
+    "discord.js": "^11.5.1",
+    "typescript": "^3.7.5"
+  }
+}

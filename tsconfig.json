@@ -1,0 +1,21 @@
+{
+    "compilerOptions": {
+        "outDir": "./built",
+        "allowJs": true,
+        "target": "es6",
+        "baseUrl": "./src",
+        "paths": {
+            "config.json": ["../config.json"]
+        },
+    "module": "commonjs",
+    "lib": ["es6", "es2017", "dom"],
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "strictNullChecks": true
+    },
+    "include": [
+        "./src/**/*",
+        ".typings-custom/**/*.ts"
+    ]
+}
