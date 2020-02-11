@@ -3,7 +3,18 @@ import * as akairo from "discord-akairo"
 import * as db from "./DB"
 import * as discord from "discord.js"
 
-export type Attribute = "uid" | "uname" | "text" | "cid" | "cname";
+// Valid attributesthat can be checked.
+// This was an algebraic sum type once,
+// but since types are erased at runtime
+// due to the compilation to untyped JS,
+// this is now an enum instead. Sigh.
+export enum Attribute {
+    UID = "uid",
+    UNAME = "uname",
+    TEXT = "text",
+    CID = "cid",
+    CNAME = "cname"
+}
 
 export interface Condition {
     readonly attribute: Attribute;
@@ -40,6 +51,12 @@ export class BotClient extends akairo.AkairoClient {
     }
 }
 
+/**
+* This is just a wrapper that offers a bit of convenience.
+* As it turns out, the client is referenced quite a bit
+* as it grants access to the DB and so on and casting
+* manually every time just clutters the code a lot.
+*/
 export class BotCommand extends akairo.Command {
     constructor(id: string, options: akairo.CommandOptions) {
         super(id, options);
@@ -53,7 +70,17 @@ export class BotCommand extends akairo.Command {
     }
 }
 
+/**
+* Utility stuff.
+*/
 export class Util {
+    /**
+    * Maximum length a message in Discord may have.
+    * Used to chunk messages before sending them when
+    * prepending the "header".
+    */
+    static readonly MAX_MESSAGE_LENGTH: number = 2000;
+
     /**
     * Generator function that creates
     * an infinite list of numbers,
@@ -81,6 +108,26 @@ export class Util {
                                          .filter(c => c instanceof discord.TextChannel)
                                          .find(c => c.name === name) 
                  : undefined
+    }
+
+    /**
+    * Cuts a string into chunks of at most SIZE characters.
+    * chunk("123456789", 200) -> [ '123456789' ]
+    * chunk("123456789", 2) -> [ '12', '34', '56', '78', '9' ]
+    * @param s: the string to chop up.
+    * @param size: the maximum length of each chunk. 
+    *              Final chunk may be smaller.
+    *              Size will be normalised to be at least 1.
+    */
+    static chunk(s: string, size: number): string[] {
+        size = Math.max(1,size);
+        const chunks: string[] = [];
+        let i: number = 0;
+        while(i < s.length) {
+            chunks.push(s.substring(i, i + size));
+            i += size;
+        }
+        return chunks;
     }
 
     private constructor() {}

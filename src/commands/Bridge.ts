@@ -32,8 +32,10 @@ export class Bridge extends bot.BotCommand {
                     {
                         id: "condition",
                         type: (word: string, m: discord.Message, prevArgs: any): bot.Condition | undefined => {
-                            const [attr,regex] = word.split(/^(.+):(.+)$/);
-                            return (attr as bot.Attribute) ? {attribute: attr as bot.Attribute, regex: regex} : undefined;
+                            const [_,attr,regex,__] = word.trim().split(/^(.+):(.+)$/); // x:y produces ['','x','y',''], so drop first and last value
+                            return attr && Object.keys(bot.Attribute).map(s => s.toUpperCase()).includes(attr.toUpperCase()) 
+                                     ? { attribute: attr as bot.Attribute, regex: regex } 
+                                     : undefined;
                         }
                     }
                 ]
@@ -42,11 +44,12 @@ export class Bridge extends bot.BotCommand {
     }
 
     public exec(message: discord.Message, args: any): void {
-        if(args.sourceGuild && args.sourceChannel && args.destinationGuild && args.destinationChannel) {
+        if(args.sourceGuild && args.sourceChannel && args.destinationGuild && args.destinationChannel && args.condition) {
             this.getClient().db.createBridge(args.sourceChannel, args.destinationChannel, [args.condition]);
-            //this.getClient().updateCache();
+            this.getClient().cache.add(args.sourceChannel.id);
+            message.reply(`Created bridge for \`${args.sourceGuild.name}#${args.sourceChannel.name}\` → \`${args.destinationGuild.name}#${args.destinationChannel.name}\` on condition \`${args.condition.attribute}:${args.condition.regex}\``);
         } else {
-            // fixme: error
+            message.reply(`Missing arguments. Use like this:\n\`<name of source guild>\` \`<name of source channel>\` \`<name of destination guild>\` \`<name of destination channel>\` \`<attribute:regex>\`, where attribute is one of ${Object.keys(bot.Attribute).join(",")}`);
         }        
     }
 }

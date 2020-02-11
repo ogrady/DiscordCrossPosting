@@ -21,18 +21,32 @@ export class MessageListener extends Listener {
         }
     }
 
-    public exec(message: discord.Message): void {
+    public async exec(message: discord.Message): Promise<void> {
         if(message.author.id === this.client.user.id) return; // early bail on own messages to avoid endless loops
         
         const cl: bot.BotClient = (<bot.BotClient>this.client);
+
         if(message.channel instanceof discord.TextChannel && cl.cache.has(message.channel.id)) {
+            // to avoid posting one message to the same channel multiple times, 
+            // all channels to which the message has been posted already are remembered
+            // to serve as a filter.
+            // This effectively creates a short-circuit OR-logic for when multiple 
+            // Bridges target the same input-output channels.
+            const postedChannels: Set<string> = new Set<string>();
             for(const b of cl.db.getBridges(message.channel)) {
-                if(this.evaluateCondition(message, b)) {
+
+                if(!postedChannels.has(b.destination_channel) && this.evaluateCondition(message, b)) {
                     const g: discord.Guild | undefined = cl.guilds.get(b.destination_guild);
+
                     if(g !== undefined) {
                         const c: discord.Channel | undefined = g.channels.get(b.destination_channel);
+
                         if(c !== undefined && c instanceof discord.TextChannel) {
-                            c.sendMessage(this.format(message))
+                            for(const chunk of bot.Util.chunk(this.format(message), bot.Util.MAX_MESSAGE_LENGTH)) {
+                                 await c.sendMessage(chunk);
+                            }
+                            postedChannels.add(b.destination_channel);
+                            
                         } else {
                             console.error(`Condition ${b.condition_id} dictates to forward a message to channel ${b.destination_channel} in guild ${g.name}, but there is such (text)channel (anymore).`)
                         }
@@ -62,7 +76,7 @@ export class MessageListener extends Listener {
     }
 
     private format(message: discord.Message): string {
-        return `${message.member.displayName}: ${message.content}`;
+        return `**${message.member.displayName}** (\`${message.guild.name}#${(<discord.TextChannel>message.channel).name}\`):\n${message.content}`;
     }
 }
 

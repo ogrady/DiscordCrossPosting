@@ -48,7 +48,7 @@ export class Database {
             bridge_id INTEGER,
             attribute TEXT,
             regex TEXT,
-            FOREIGN KEY(bridge_id) REFERENCES bridges(bridge_id),
+            FOREIGN KEY(bridge_id) REFERENCES bridges(bridge_id) ON DELETE CASCADE,
             FOREIGN KEY(attribute) REFERENCES attributes(name)
         )`,
 
@@ -59,7 +59,7 @@ export class Database {
             try {
                 this.execute(db => db.prepare(sql).run());
             } catch(e) {
-                //console.error(`Error while trying to initialise the database schema: ${e.message}`);
+                console.error(`Error while trying to initialise the database schema: ${e.message}`);
             }
         }
     }
@@ -117,7 +117,7 @@ export class Database {
     * f: lambda expression taking the opened sqlite3 connection to run queries on.
     * returns: the result of the lambda.
     */
-    public execute<T>(f: (sqlite3) => T): T|undefined  {
+    public execute<T>(f: (sqlite3) => T): T | undefined  {
         let db: sqlite3.Database = sqlite3.default(this.file, undefined);
         db.pragma("foreign_keys = ON");
 
@@ -126,7 +126,7 @@ export class Database {
             res = f(db);
         } catch(err) {
             res = undefined;
-            console.log("error", `DB execute: ${err["message"]} (stack: ${new Error().stack})`);
+            console.error(`DB execute: ${err["message"]} (stack: ${new Error().stack})`);
         }
 
         db.close();
