@@ -43,7 +43,7 @@ export class MessageListener extends Listener {
 
                         if(c !== undefined && c instanceof discord.TextChannel) {
                             for(const chunk of bot.Util.chunk(this.format(message), bot.Util.MAX_MESSAGE_LENGTH)) {
-                                 await c.send(chunk);
+                                 await c.send(chunk, {disableEveryone: true});
                             }
                             postedChannels.add(b.destination_channel);
                             
