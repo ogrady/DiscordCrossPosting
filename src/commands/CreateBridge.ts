@@ -1,11 +1,11 @@
 import * as bot from "../BotClient"
 import * as discord from "discord.js"
 
-export class Bridge extends bot.BotCommand {
+export class CreateBridge extends bot.BotCommand {
     public constructor() {
-        super("bridge", 
+        super("createbridge", 
             {
-                aliases: ["bridge"],
+                aliases: ["bridge", "mkbridge"],
                 userPermissions: ["ADMINISTRATOR"],
                 split: "quoted",
                 args: [
@@ -54,4 +54,4 @@ export class Bridge extends bot.BotCommand {
     }
 }
 
-module.exports = Bridge;
+module.exports = CreateBridge;

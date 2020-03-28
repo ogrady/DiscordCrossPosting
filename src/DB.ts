@@ -67,9 +67,10 @@ export class Database {
     /**
     * Gets all bridges from a given source channel. 
     * If no source channel is passed, all bridges are returned.
+    * @param sourceChannel: the channel from which the bridges should start.
     * @returns list of qualifying bridges.
     */
-    public getBridges(sourceChannel: discord.TextChannel | undefined): Bridge[] {
+    public getBridges(sourceChannel: discord.TextChannel | undefined = undefined): Bridge[] {
         let predicate: string = "";
         let params: string[] = [];
 
@@ -98,6 +99,9 @@ export class Database {
 
     /**
     * Creates a new bridge.
+    * @param sourceChannel: channel in a guild from which the messages should be bridged. 
+    * @param destinationChannel: channel in a guild where the messages should be bridged to. 
+    * @param conditions: a list of conditions for the bridge to trigger.
     */
     public createBridge(sourceChannel: discord.TextChannel, destinationChannel: discord.TextChannel, conditions: bot.Condition[]): void {
         return this.execute(db => db.transaction((_) => {
@@ -110,6 +114,14 @@ export class Database {
                 }                
             })(null)
         );
+    }
+
+    /**
+    * Destroys a bridge. 
+    * @param bridgeId: Database id of the bridge to destroy.
+    */
+    public removeBridge(bridgeId: number): void {
+        return this.execute(db => db.prepare(`DELETE FROM bridges WHERE bridge_id = ?`).run(bridgeId));
     }
 
     /**

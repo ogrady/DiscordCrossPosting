@@ -21,6 +21,17 @@ export interface Condition {
     readonly regex: string;
 }
 
+export interface ResolvedBridge {
+    readonly bridge_id: number;
+    readonly source_guild: discord.Guild;
+    readonly source_channel: discord.TextChannel, 
+    readonly destination_guild: discord.Guild,
+    readonly destination_channel: discord.TextChannel,
+    readonly condition_id: number,
+    readonly attribute: Attribute, 
+    readonly regex: string
+}
+
 export class BotClient extends akairo.AkairoClient {
     public readonly db: db.Database;
     public readonly cache: Set<string>; // caches input channels, which are unique Snowflakes, to speed up when messages should be discarded
@@ -48,6 +59,32 @@ export class BotClient extends akairo.AkairoClient {
         for(const b of this.db.getBridges(undefined)) {
             this.cache.add(b.source_channel);
         }
+    }
+
+    /**
+    * Resolves a db.Bridge into a ResolvedBridge. 
+    * Returning undefined means that one of the guilds or channels is no 
+    * longer available to the bot. 
+    * @param bridge: the bridge to resolve. 
+    * @returns ResolvedBridge if possible, else undefined.
+    */
+    public resolveBridge(bridge: db.Bridge): ResolvedBridge | undefined {
+        const srcGuild: discord.Guild = this.guilds.find(b => b.name === bridge.source_guild);
+        const dstGuild: discord.Guild = this.guilds.find(b => b.name === bridge.destination_guild);
+        const srcChannel: discord.TextChannel | undefined = Util.findTextChannel(srcGuild, bridge.source_channel);
+        const dstChannel: discord.TextChannel | undefined = Util.findTextChannel(dstGuild, bridge.destination_channel);
+        return srcChannel === undefined || dstChannel === undefined 
+                            ? undefined
+                            : {
+                                bridge_id: bridge.bridge_id,
+                                source_guild: srcGuild,
+                                source_channel: srcChannel,
+                                destination_guild: dstGuild,
+                                destination_channel: dstChannel, 
+                                condition_id: bridge.condition_id,
+                                attribute: bridge.attribute,
+                                regex: bridge.regex
+                            }        
     }
 }
 
@@ -92,6 +129,13 @@ export class Util {
             yield i++;
         }
     }
+
+    static formatBridge(bid: number, bridge?: ResolvedBridge): string {
+        return bridge === undefined 
+                        ? `\`${bid}\`: INVALID`
+                        : `\`${bridge.bridge_id}\`: ${bridge.source_guild.name}#${bridge.source_channel.name} → ${bridge.destination_guild.name}#${bridge.destination_channel.name} on condition \`${bridge.attribute}:${bridge.regex}\``
+    }
+
 
     /**
     * Tries to find a TextChannel with a given name. 
