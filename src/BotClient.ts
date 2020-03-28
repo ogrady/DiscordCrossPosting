@@ -69,10 +69,22 @@ export class BotClient extends akairo.AkairoClient {
     * @returns ResolvedBridge if possible, else undefined.
     */
     public resolveBridge(bridge: db.Bridge): ResolvedBridge | undefined {
-        const srcGuild: discord.Guild = this.guilds.find(b => b.name === bridge.source_guild);
-        const dstGuild: discord.Guild = this.guilds.find(b => b.name === bridge.destination_guild);
-        const srcChannel: discord.TextChannel | undefined = Util.findTextChannel(srcGuild, bridge.source_channel);
-        const dstChannel: discord.TextChannel | undefined = Util.findTextChannel(dstGuild, bridge.destination_channel);
+        const srcGuild: discord.Guild = this.guilds.find(b => b.id === bridge.source_guild);
+        const dstGuild: discord.Guild = this.guilds.find(b => b.id === bridge.destination_guild);
+        const srcChannel: discord.TextChannel | undefined = Util.findTextChannel(srcGuild, c => c.id === bridge.source_channel);
+        const dstChannel: discord.TextChannel | undefined = Util.findTextChannel(dstGuild, c => c.id === bridge.destination_channel);
+        if(!srcGuild) {
+            console.error(`Could not find a source guild with id = ${bridge.source_guild}.`)
+        }
+        if(!dstGuild) {
+            console.error(`Could not find a destination guild with id = ${bridge.destination_guild}.`)
+        }
+        if(!srcChannel)  {
+            console.error(`Could not find a source channel with id = ${bridge.source_channel}.`)
+        }
+        if(!dstChannel) {
+            console.error(`Could not find a destination channel with id = ${bridge.destination_channel}.`)
+        }
         return srcChannel === undefined || dstChannel === undefined 
                             ? undefined
                             : {
@@ -133,24 +145,26 @@ export class Util {
     static formatBridge(bid: number, bridge?: ResolvedBridge): string {
         return bridge === undefined 
                         ? `\`${bid}\`: INVALID`
-                        : `\`${bridge.bridge_id}\`: ${bridge.source_guild.name}#${bridge.source_channel.name} → ${bridge.destination_guild.name}#${bridge.destination_channel.name} on condition \`${bridge.attribute}:${bridge.regex}\``
+                        : `\`${bridge.bridge_id}\`: \`${bridge.source_guild.name}#${bridge.source_channel.name}\` → \`${bridge.destination_guild.name}#${bridge.destination_channel.name}\` on condition \`${bridge.attribute}:${bridge.regex}\``
     }
 
 
     /**
-    * Tries to find a TextChannel with a given name. 
+    * Tries to find a TextChannel by a generic predicate. 
     * Discord -- for whatever reason -- puts all their Channels,
     * text, voice, or others, into one big collection.
+    * Note that internally Collection.find is used, returning
+    * only the first matching channel.
     * @param g: the guild to look for the TextChannel in.
     *           Passing a falsey value for g results in undefined.
-    * @param name: the name that TextChannel should have
-    * @returns the TextChannel, if a channel of that name was found,
+    * @param pred: the predicate that TextChannel has to pass.
+    * @returns the TextChannel, if a channel passing the predicate was found,
     *          or undefined if no such channel was found or g is falsey.
     */
-    static findTextChannel(g: discord.Guild | undefined, name: string): discord.TextChannel | undefined {
+    static findTextChannel(g: discord.Guild | undefined, pred: (c: discord.TextChannel) => boolean): discord.TextChannel | undefined {
         return g ? <discord.TextChannel>g.channels
                                          .filter(c => c instanceof discord.TextChannel)
-                                         .find(c => c.name === name) 
+                                         .find(pred) 
                  : undefined
     }
 

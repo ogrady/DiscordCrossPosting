@@ -17,7 +17,7 @@ export class CreateBridge extends bot.BotCommand {
                     {
                         id: "sourceChannel",
                         type: (word: string, m: discord.Message, prevArgs: { sourceGuild: discord.Guild }): discord.TextChannel | undefined => 
-                            bot.Util.findTextChannel(prevArgs.sourceGuild, word)                            
+                            bot.Util.findTextChannel(prevArgs.sourceGuild, c => c.name === word)                            
                     },
                     {
                         id: "destinationGuild",
@@ -27,7 +27,7 @@ export class CreateBridge extends bot.BotCommand {
                     {
                         id: "destinationChannel",
                         type: (word: string, m: discord.Message, prevArgs: { sourceGuild: discord.Guild, sourceChannel: discord.TextChannel, destinationGuild: discord.Guild }): discord.TextChannel | undefined => 
-                            bot.Util.findTextChannel(prevArgs.destinationGuild, word)
+                            bot.Util.findTextChannel(prevArgs.destinationGuild, c => c.name === word)
                     },
                     {
                         id: "condition",
