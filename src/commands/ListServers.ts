@@ -15,6 +15,7 @@ export class ListServers extends bot.BotCommand {
         const c = bot.Util.counter();
         message.reply(this.client
                           .guilds
+                          .cache
                           .map(g => `\`${c.next().value}\`: ${g.name} (${g.id})`)
                           .join("\n"));
     }

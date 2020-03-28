@@ -8,7 +8,7 @@ export class ListBridges extends bot.BotCommand {
             {
                 aliases: ["listbridges", "lsbridges"],
                 userPermissions: ["ADMINISTRATOR"],
-                split: "quoted",
+                quoted: true
             }
         );
     }

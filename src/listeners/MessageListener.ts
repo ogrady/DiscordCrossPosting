@@ -9,20 +9,20 @@ export class MessageListener extends Listener {
     public constructor() {
         super("message", {
             emitter: "client",
-            eventName: "message"
+            event: "message"
         });
 
         this.getters = {
             "cid": m => m.channel.id,
             "cname": m => (<discord.TextChannel>m.channel).name,
             "uid": m => m.author.id,
-            "uname": m => m.member.displayName,
+            "uname": m => m === null ? "" : m.member!.displayName,
             "text": m => m.content
         }
     }
 
     public async exec(message: discord.Message): Promise<void> {
-        if(message.author.id === this.client.user.id) return; // early bail on own messages to avoid endless loops
+        if(message.author.id === this.client.user!.id) return; // early bail on own messages to avoid endless loops
         
         const cl: bot.BotClient = (<bot.BotClient>this.client);
 
@@ -36,14 +36,14 @@ export class MessageListener extends Listener {
             for(const b of cl.db.getBridges(message.channel)) {
 
                 if(!postedChannels.has(b.destination_channel) && this.evaluateCondition(message, b)) {
-                    const g: discord.Guild | undefined = cl.guilds.get(b.destination_guild);
+                    const g: discord.Guild | undefined = cl.guilds.cache.get(b.destination_guild);
 
                     if(g !== undefined) {
-                        const c: discord.Channel | undefined = g.channels.get(b.destination_channel);
+                        const c: discord.Channel | undefined = g.channels.cache.get(b.destination_channel);
 
                         if(c !== undefined && c instanceof discord.TextChannel) {
                             for(const chunk of bot.Util.chunk(this.format(message), bot.Util.MAX_MESSAGE_LENGTH)) {
-                                 await c.send(chunk, {disableEveryone: true});
+                                 await c.send(chunk, {disableMentions: 'everyone'});
                             }
                             postedChannels.add(b.destination_channel);
                             
@@ -76,7 +76,7 @@ export class MessageListener extends Listener {
     }
 
     private format(message: discord.Message): string {
-        return `**${message.member.displayName}** (\`${message.guild.name}#${(<discord.TextChannel>message.channel).name}\`):\n${message.content}`;
+        return `**${message.member!.displayName}** (\`${message.guild!.name}#${(<discord.TextChannel>message.channel).name}\`):\n${message.content}`;
     }
 }
 

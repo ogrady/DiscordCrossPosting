@@ -7,7 +7,7 @@ export class RemoveBridge extends bot.BotCommand {
             {
                 aliases: ["removebridge", "rmbridge"],
                 userPermissions: ["ADMINISTRATOR"],
-                split: "quoted",
+                quoted: true,
                 args: [
                     {
                         id: "bridgeId",

@@ -108,9 +108,10 @@ export class Database {
                 db.prepare(`INSERT INTO bridges(source_guild, source_channel, destination_guild, destination_channel) VALUES (?,?,?,?)`)
                   .run(sourceChannel.guild.id, sourceChannel.id, destinationChannel.guild.id, destinationChannel.id);
                 const bridgeId = db.prepare(`SELECT last_insert_rowid() AS id`).get().id;
+                console.log(bridgeId);
                 for(const c of conditions) {
                     db.prepare(`INSERT INTO bridge_conditions(bridge_id, attribute, regex) VALUES(?,?,?)`)
-                      .run(bridgeId, c.attribute, c.regex);    
+                      .run(bridgeId, c.attribute.toLowerCase(), c.regex);    
                 }                
             })(null)
         );

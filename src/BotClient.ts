@@ -24,22 +24,38 @@ export interface Condition {
 export interface ResolvedBridge {
     readonly bridge_id: number;
     readonly source_guild: discord.Guild;
-    readonly source_channel: discord.TextChannel, 
-    readonly destination_guild: discord.Guild,
-    readonly destination_channel: discord.TextChannel,
-    readonly condition_id: number,
-    readonly attribute: Attribute, 
-    readonly regex: string
+    readonly source_channel: discord.TextChannel;
+    readonly destination_guild: discord.Guild;
+    readonly destination_channel: discord.TextChannel;
+    readonly condition_id: number;
+    readonly attribute: Attribute; 
+    readonly regex: string;
 }
 
 export class BotClient extends akairo.AkairoClient {
     public readonly db: db.Database;
     public readonly cache: Set<string>; // caches input channels, which are unique Snowflakes, to speed up when messages should be discarded
+    public readonly commandHandler: akairo.CommandHandler;
+    public readonly listenerHandler: akairo.ListenerHandler;
+    public readonly inhibitorHandler: akairo.InhibitorHandler;
     
     public constructor(options, dbfile) {
         super(options, {});
         this.db = new db.Database(dbfile);
         this.cache = new Set<string>();
+
+        this.commandHandler = new akairo.CommandHandler(this, {
+            directory: './built/commands/',
+            prefix: config.prefix,
+            commandUtil: true,
+            commandUtilLifetime: 600000
+        });
+        this.commandHandler.loadAll();
+
+        this.listenerHandler = new akairo.ListenerHandler(this, {
+            directory: './built/listeners/'
+        });
+        this.listenerHandler.loadAll();
         
         this.on("ready", () => {
 
@@ -69,8 +85,8 @@ export class BotClient extends akairo.AkairoClient {
     * @returns ResolvedBridge if possible, else undefined.
     */
     public resolveBridge(bridge: db.Bridge): ResolvedBridge | undefined {
-        const srcGuild: discord.Guild = this.guilds.find(b => b.id === bridge.source_guild);
-        const dstGuild: discord.Guild = this.guilds.find(b => b.id === bridge.destination_guild);
+        const srcGuild: discord.Guild | undefined = this.guilds.cache.find(b => b.id === bridge.source_guild);
+        const dstGuild: discord.Guild | undefined = this.guilds.cache.find(b => b.id === bridge.destination_guild);
         const srcChannel: discord.TextChannel | undefined = Util.findTextChannel(srcGuild, c => c.id === bridge.source_channel);
         const dstChannel: discord.TextChannel | undefined = Util.findTextChannel(dstGuild, c => c.id === bridge.destination_channel);
         if(!srcGuild) {
@@ -89,9 +105,9 @@ export class BotClient extends akairo.AkairoClient {
                             ? undefined
                             : {
                                 bridge_id: bridge.bridge_id,
-                                source_guild: srcGuild,
+                                source_guild: <discord.Guild>srcGuild,
                                 source_channel: srcChannel,
-                                destination_guild: dstGuild,
+                                destination_guild: <discord.Guild>dstGuild,
                                 destination_channel: dstChannel, 
                                 condition_id: bridge.condition_id,
                                 attribute: bridge.attribute,
@@ -162,7 +178,7 @@ export class Util {
     *          or undefined if no such channel was found or g is falsey.
     */
     static findTextChannel(g: discord.Guild | undefined, pred: (c: discord.TextChannel) => boolean): discord.TextChannel | undefined {
-        return g ? <discord.TextChannel>g.channels
+        return g ? <discord.TextChannel>g.channels.cache
                                          .filter(c => c instanceof discord.TextChannel)
                                          .find(pred) 
                  : undefined
