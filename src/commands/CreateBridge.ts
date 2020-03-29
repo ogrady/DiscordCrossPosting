@@ -56,37 +56,3 @@ export class CreateBridge extends bot.BotCommand {
 }
 
 module.exports = CreateBridge;
-
-
-/* 
-                args: [
-                    {
-                        id: "sourceGuild",
-                        type: (m: discord.Message, phrase: string): discord.Guild | undefined => 
-                            this.getClient().guilds.cache.find(g => g.name === phrase)
-                    },
-                    {
-                        id: "sourceChannel",
-                                                 
-                    },
-                    {
-                        id: "destinationGuild",
-                        type: (word: string, m: discord.Message, prevArgs: { sourceGuild: discord.Guild, sourceChannel: discord.TextChannel }): discord.Guild | undefined => 
-                            this.getClient().guilds.cache.find(g => g.name === word)
-                    },
-                    {
-                        id: "destinationChannel",
-                        type: (word: string, m: discord.Message, prevArgs: { sourceGuild: discord.Guild, sourceChannel: discord.TextChannel, destinationGuild: discord.Guild }): discord.TextChannel | undefined => 
-                            bot.Util.findTextChannel(prevArgs.destinationGuild, c => c.name === word)
-                    },
-                    {
-                        id: "condition",
-                        type: (word: string, m: discord.Message, prevArgs: any): bot.Condition | undefined => {
-                            const [_,attr,regex,__] = word.trim().split(/^(.+):(.+)$/); // x:y produces ['','x','y',''], so drop first and last value
-                            return attr && Object.keys(bot.Attribute).map(s => s.toUpperCase()).includes(attr.toUpperCase()) 
-                                     ? { attribute: attr as bot.Attribute, regex: regex } 
-                                     : undefined;
-                        }
-                    }
-                ]
-                */
