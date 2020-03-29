@@ -14,6 +14,14 @@ from the root directory.
 
 Copy the `config.json.example` to `config.json` and adjust to your liking. Tokens can be acquired from the [Developer Portal](https://discordapp.com/developers/applications/) when creating a new application.
 
+## Running
+After setting up, you can run the bot using
+
+```
+node built/index.js
+```
+From the root directory. You may want to put a service in place to automatically run the bot, as usual.
+
 ## Usage
 The crossposter features the following commands, all of them only available to the respective server administrators the bot runs on:
 
