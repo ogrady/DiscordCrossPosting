@@ -16,7 +16,7 @@ export class MessageListener extends Listener {
             "cid": m => m.channel.id,
             "cname": m => (<discord.TextChannel>m.channel).name,
             "uid": m => m.author.id,
-            "uname": m => m === null ? "" : m.member!.displayName,
+            "uname": m => m === null || m.member === null ? "" : m.member.displayName,
             "text": m => m.content
         }
     }
@@ -76,7 +76,7 @@ export class MessageListener extends Listener {
     }
 
     private format(message: discord.Message): string {
-        return `**${message.member!.displayName}** (\`${message.guild!.name}#${(<discord.TextChannel>message.channel).name}\`):\n${message.content}`;
+        return `**${message.member === null ? "" : message.member!.displayName}** (\`${message.guild!.name}#${(<discord.TextChannel>message.channel).name}\`):\n${message.content}`;
     }
 }
 
