@@ -76,7 +76,7 @@ export class MessageListener extends Listener {
     }
 
     private format(message: discord.Message): string {
-        return `**${message.member === null ? "" : message.member!.displayName}** (\`${message.guild!.name}#${(<discord.TextChannel>message.channel).name}\`):\n${message.content}`;
+        return `**${message.member === null ? "WebHook" : message.member!.displayName}** (\`${message.guild!.name}#${(<discord.TextChannel>message.channel).name}\`):\n${message.content}`;
     }
 }
 
