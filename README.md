@@ -23,7 +23,7 @@ node built/index.js
 From the root directory. You may want to put a service in place to automatically run the bot, as usual.
 
 ## Usage
-The crossposter features the following commands, all of them only available to the respective server administrators the bot runs on:
+The crossposter features the following commands, all of them only available to the owner of the bot, as defined within the configuration file.
 
 ### listservers
 Lists all servers the bot instance is running on. No parameters.

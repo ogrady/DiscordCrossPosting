@@ -5,15 +5,18 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "tsc": "tsc"
+    "tsc": "tsc",
+    "build": "tsc"
   },
   "author": "Len",
   "license": "ISC",
   "dependencies": {
-    "@types/node": "^13.7.0",
     "better-sqlite3": "^5.4.3",
-    "discord-akairo": "^8.0.0",
-    "discord.js": "^12.1.1",
-    "typescript": "^3.7.5"
+    "discord-akairo": "^8.1.0",
+    "discord.js": "^12.5.1"
+  },
+  "devDependencies": {
+    "@types/node": "^14.14.37",
+    "typescript": "^4.2.3"
   }
 }

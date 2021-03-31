@@ -1,18 +1,18 @@
 import * as bot from "../BotClient"
 import * as discord from "discord.js"
+import {OwnerCommand} from "./AbstractOwnerCommand";
 
-export class CreateBridge extends bot.BotCommand {
+export class CreateBridge extends OwnerCommand {
     public constructor() {
-        super("createbridge", 
+        super("createbridge",
             {
                 aliases: ["bridge", "mkbridge"],
-                userPermissions: ["ADMINISTRATOR"],
                 quoted: true,
             }
         );
     }
 
-    private *args(message) {
+    private* args(message) {
         const sourceGuild = yield { 
                             type: (m: discord.Message, phrase: string): discord.Guild | undefined => 
                                             this.getClient().guilds.cache.find(g => g.name === phrase)

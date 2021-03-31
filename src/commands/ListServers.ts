@@ -1,12 +1,12 @@
 import * as bot from "../BotClient"
 import * as discord from "discord.js"
+import {OwnerCommand} from "./AbstractOwnerCommand";
 
-export class ListServers extends bot.BotCommand {
+export class ListServers extends OwnerCommand {
     public constructor() {
-        super("listserver", 
+        super("listserver",
             {
-                aliases: ["listserver", "lsservers"],
-                userPermissions: ['ADMINISTRATOR']
+                aliases: ["listserver", "lsservers"]
             }
         );
     }
