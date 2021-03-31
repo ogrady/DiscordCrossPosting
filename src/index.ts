@@ -15,16 +15,17 @@ function startBot() {
     console.log("Starting up...");
     client.login(config.token);
     console.log("Started up...");
-    if (config.status) {
-        client.user?.setPresence({
-            status: "online",
-            activity: {
-                type: "WATCHING",
-                name: config.status
-            }
-        })
-    }
-
 }
+
+function shutdown() {
+    console.info('SIGTERM signal received.');
+    console.log('Closing.');
+    if (client) {
+        client.destroy()
+    }
+    process.exit(0)
+}
+
+['SIGTERM', 'SIGINT'].forEach(value => process.on(value, shutdown));
 
 startBot();

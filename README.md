@@ -7,7 +7,7 @@ This bot is written in [Typescript](https://www.typescriptlang.org/), running as
 To set it up, first install the dependencies and compile to vanilla Javascript, running
 
 ```
-npm i && tsc
+npm i && npm run build
 ```
 
 from the root directory.
@@ -20,6 +20,11 @@ After setting up, you can run the bot using
 ```
 node built/index.js
 ```
+or
+```
+npm run run
+```
+
 From the root directory. You may want to put a service in place to automatically run the bot, as usual.
 
 ## Usage
