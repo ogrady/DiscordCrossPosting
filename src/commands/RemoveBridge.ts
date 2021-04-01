@@ -1,12 +1,12 @@
 import * as bot from "../BotClient"
 import * as discord from "discord.js"
+import {OwnerCommand} from "./AbstractOwnerCommand";
 
-export class RemoveBridge extends bot.BotCommand {
+export class RemoveBridge extends OwnerCommand {
     public constructor() {
-        super("removebridge", 
+        super("removebridge",
             {
                 aliases: ["removebridge", "rmbridge"],
-                userPermissions: ["ADMINISTRATOR"],
                 quoted: true,
                 args: [
                     {
@@ -14,17 +14,17 @@ export class RemoveBridge extends bot.BotCommand {
                         type: "integer"
                     }
                 ]
-                }
+            }
         );
     }
 
     public exec(message: discord.Message, args: any): void {
-        if(args.bridgeId) {
+        if (args.bridgeId) {
             this.getClient().db.removeBridge(args.bridgeId);
             message.reply(`Removed bridge with id = \`${args.bridgeId}\``);
         } else {
             message.reply(`Missing arguments. Use like this:\n\`<name of source guild>\` \`<name of source channel>\` \`<name of destination guild>\` \`<name of destination channel>\` \`<attribute:regex>\`, where attribute is one of ${Object.keys(bot.Attribute).join(",")}`);
-        }        
+        }
     }
 }
 
