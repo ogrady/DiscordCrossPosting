@@ -1,3 +1,4 @@
+import { NewsChannel, TextChannel } from "discord.js";
 import * as discord from "discord.js";
 import * as bot from "../BotClient";
 import { OwnerCommand } from "./AbstractOwnerCommand";
@@ -19,8 +20,8 @@ export class CreateBridge extends OwnerCommand {
         };
 
         const sourceChannel = yield {
-            type: (m: discord.Message, phrase: string): discord.TextChannel | undefined =>
-                bot.Util.findTextChannel(sourceGuild, c => c.name === phrase || c.id === phrase)
+            type: (m: discord.Message, phrase: string): TextChannel | NewsChannel | undefined =>
+                bot.Util.findTextChannel(sourceGuild,  phrase)
         };
 
         const destinationGuild = yield {
@@ -29,8 +30,8 @@ export class CreateBridge extends OwnerCommand {
         };
 
         const destinationChannel = yield {
-            type: (m: discord.Message, phrase: string): discord.TextChannel | undefined =>
-                bot.Util.findTextChannel(destinationGuild, c => c.name === phrase || c.id === phrase)
+            type: (m: discord.Message, phrase: string): TextChannel | NewsChannel | undefined =>
+                bot.Util.findTextChannel(destinationGuild,  phrase)
         };
 
         const condition = yield {
