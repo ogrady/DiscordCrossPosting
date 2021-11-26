@@ -1,7 +1,7 @@
 const config = require("../config.json");
 import * as akairo from "discord-akairo";
-import { Guild, NewsChannel, TextChannel } from "discord.js";
 import * as discord from "discord.js";
+import { NewsChannel, TextChannel } from "discord.js";
 import * as db from "./DB";
 
 // Valid attributesthat can be checked.
@@ -85,11 +85,11 @@ export class BotClient extends akairo.AkairoClient {
      * @param bridge: the bridge to resolve.
      * @returns ResolvedBridge if possible, else undefined.
      */
-    public resolveBridge(bridge: db.Bridge): ResolvedBridge | undefined {
-        const srcGuild: discord.Guild | undefined = this.guilds.cache.find(b => b.id === bridge.source_guild);
-        const dstGuild: discord.Guild | undefined = this.guilds.cache.find(b => b.id === bridge.destination_guild);
-        const srcChannel: TextChannel | NewsChannel | undefined = Util.findTextChannel(srcGuild,bridge.source_channel);
-        const dstChannel: TextChannel | NewsChannel | undefined = Util.findTextChannel(srcGuild,bridge.destination_channel);
+    public async resolveBridge(bridge: db.Bridge): Promise<ResolvedBridge | undefined> {
+        const srcGuild: discord.Guild | null = await this.guilds.resolve(bridge.source_guild);
+        const dstGuild: discord.Guild | null = await this.guilds.resolve(bridge.destination_guild);
+        const srcChannel: TextChannel | NewsChannel | null = await Util.findTextChannel(srcGuild, bridge.source_channel);
+        const dstChannel: TextChannel | NewsChannel | null = await Util.findTextChannel(srcGuild, bridge.destination_channel);
         if (!srcGuild) {
             console.error(`Could not find a source guild with id = ${bridge.source_guild}.`);
         }
@@ -102,7 +102,7 @@ export class BotClient extends akairo.AkairoClient {
         if (!dstChannel) {
             console.error(`Could not find a destination channel with id = ${bridge.destination_channel}.`);
         }
-        return srcChannel === undefined || dstChannel === undefined
+        return srcChannel === null || dstChannel === null
             ? undefined
             : {
                 bridge_id: bridge.bridge_id,
@@ -166,8 +166,8 @@ export class Util {
     }
 
 
-    static findGuild( client:BotClient, term: string): discord.Guild | null {
-        return client.guilds.resolve(term);
+    static async findGuild(client: BotClient, term: string): Promise<discord.Guild | null> {
+        return client.guilds.resolve(term) || client.guilds.cache.filter(value => value.name === term).first() || null;
     }
 
     /**
@@ -176,22 +176,22 @@ export class Util {
      * text, voice, or others, into one big collection.
      * Note that internally Collection.find is used, returning
      * only the first matching channel.
+     * @param client the bot client instance
      * @param g: the guild to look for the TextChannel in.
      *           Passing a falsey value for g results in undefined.
      * @param phrase: channel name or id to look for
      * @returns the TextChannel, if a channel passing the predicate was found,
      *          or undefined if no such channel was found or g is falsey.
      */
-    static findTextChannel(g: discord.Guild | undefined, phrase: string): TextChannel | NewsChannel | undefined {
-        if (g) {
-            let resolve = g.channels.resolve(phrase);
+    static async findTextChannel(g: discord.Guild | null, phrase: string): Promise<TextChannel | NewsChannel | null> {
+        let guild = await g?.fetch();
+        if (guild) {
+            let resolve = guild.channels.resolve(phrase) || guild.channels.cache.filter(c => c.name === phrase).first() || null;
             if (resolve?.isText()) {
-                return resolve
+                return resolve;
             }
-            return undefined;
-        } else {
-            return undefined;
         }
+        return null;
     }
 
     /**

@@ -1,5 +1,5 @@
-import { NewsChannel, TextChannel } from "discord.js";
 import * as discord from "discord.js";
+import { NewsChannel, TextChannel } from "discord.js";
 import * as bot from "../BotClient";
 import { OwnerCommand } from "./AbstractOwnerCommand";
 
@@ -14,24 +14,24 @@ export class CreateBridge extends OwnerCommand {
     }
 
     private* args(message) {
-        const sourceGuild = yield {
-            type: (m: discord.Message, phrase: string): discord.Guild | undefined =>
-                this.getClient().guilds.cache.find(g => g.name === phrase || g.id === phrase)
+        const sourceGuild: discord.Guild | null = yield {
+            type: async (m: discord.Message, phrase: string): Promise<discord.Guild | null> =>
+                await bot.Util.findGuild(this.getClient(), phrase)
         };
 
-        const sourceChannel = yield {
-            type: (m: discord.Message, phrase: string): TextChannel | NewsChannel | undefined =>
-                bot.Util.findTextChannel(sourceGuild,  phrase)
+        const sourceChannel: TextChannel | NewsChannel | null = yield {
+            type: async (m: discord.Message, phrase: string): Promise<TextChannel | NewsChannel | null> =>
+                await bot.Util.findTextChannel(sourceGuild, phrase)
         };
 
-        const destinationGuild = yield {
-            type: (m: discord.Message, phrase: string): discord.Guild | undefined =>
-                this.getClient().guilds.cache.find(g => g.name === phrase || g.id === phrase)
+        const destinationGuild: discord.Guild | null = yield {
+            type: async (m: discord.Message, phrase: string): Promise<discord.Guild | null> =>
+                await bot.Util.findGuild(this.getClient(), phrase)
         };
 
-        const destinationChannel = yield {
-            type: (m: discord.Message, phrase: string): TextChannel | NewsChannel | undefined =>
-                bot.Util.findTextChannel(destinationGuild,  phrase)
+        const destinationChannel: TextChannel | NewsChannel | null = yield {
+            type: async (m: discord.Message, phrase: string): Promise<TextChannel | NewsChannel | null> =>
+                await bot.Util.findTextChannel(destinationGuild, phrase)
         };
 
         const condition = yield {
