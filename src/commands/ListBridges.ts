@@ -12,11 +12,11 @@ export class ListBridges extends OwnerCommand {
         );
     }
 
-    public exec(message: discord.Message, args: any): void {
-        message.reply(this.getClient().db.getBridges()
-                .map(b => bot.Util.formatBridge(b.bridge_id, this.getClient().resolveBridge(b)))
+    public async exec(message: discord.Message, args: any): Promise<void> {
+        await message.reply(this.getClient().db.getBridges()
+                .map(async b => bot.Util.formatBridge(b.bridge_id, await this.getClient().resolveBridge(b)))
                 .join("\n")
-            , {split: true});
+            , { split: true });
 
     }
 }

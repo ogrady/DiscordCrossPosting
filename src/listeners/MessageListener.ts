@@ -36,10 +36,10 @@ export class MessageListener extends Listener {
             for(const b of cl.db.getBridges(message.channel)) {
 
                 if(!postedChannels.has(b.destination_channel) && this.evaluateCondition(message, b)) {
-                    const g: discord.Guild | undefined = cl.guilds.cache.get(b.destination_guild);
+                    const g: discord.Guild | null = cl.guilds.resolve(b.destination_guild);
 
-                    if(g !== undefined) {
-                        const c: discord.Channel | undefined = g.channels.cache.get(b.destination_channel);
+                    if(g !== null) {
+                        const c: discord.Channel | null = g.channels.resolve(b.destination_channel);
 
                         if(c !== undefined && c instanceof discord.TextChannel) {
                             for(const chunk of bot.Util.chunk(this.format(message), bot.Util.MAX_MESSAGE_LENGTH)) {

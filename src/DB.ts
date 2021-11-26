@@ -1,13 +1,14 @@
 import * as sqlite3 from "better-sqlite3"
+import { ChannelResolvable, GuildChannelResolvable, GuildResolvable, Snowflake } from "discord.js";
 import * as discord from "discord.js"
 import * as bot from "BotClient"
 
 export interface Bridge {
     readonly bridge_id: number;
-    readonly source_guild: string;
-    readonly source_channel: string, 
-    readonly destination_guild: string,
-    readonly destination_channel: string,
+    readonly source_guild: Snowflake;
+    readonly source_channel: Snowflake,
+    readonly destination_guild: Snowflake,
+    readonly destination_channel: Snowflake,
     readonly condition_id: number,
     readonly attribute: bot.Attribute, 
     readonly regex: string
