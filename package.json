@@ -11,7 +11,7 @@
   "author": "Len",
   "license": "ISC",
   "dependencies": {
-    "better-sqlite3": "^7.4.5",
+    "better-sqlite3": "^7.5.0",
     "discord-akairo": "^8.1.0",
     "discord.js": "^12.5.3"
   },
