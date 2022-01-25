@@ -12,7 +12,7 @@
   "license": "ISC",
   "dependencies": {
     "better-sqlite3": "^7.5.0",
-    "discord-akairo": "discord-akairo/discord-akairo",
+    "discord-akairo": "github:discord-akairo/discord-akairo#master",
     "discord.js": "^13.6.0"
   },
   "devDependencies": {
