@@ -176,12 +176,11 @@ export class Util {
      * text, voice, or others, into one big collection.
      * Note that internally Collection.find is used, returning
      * only the first matching channel.
-     * @param client the bot client instance
      * @param g: the guild to look for the TextChannel in.
-     *           Passing a falsey value for g results in undefined.
+     *           Passing a falsey value for g results in null.
      * @param phrase: channel name or id to look for
      * @returns the TextChannel, if a channel passing the predicate was found,
-     *          or undefined if no such channel was found or g is falsey.
+     *          or null if no such channel was found or g is falsey.
      */
     static async findTextChannel(g: discord.Guild | null, phrase: string): Promise<TextChannel | NewsChannel | null> {
         let guild = await g?.fetch();

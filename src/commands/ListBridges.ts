@@ -1,6 +1,6 @@
-import * as bot from "../BotClient";
 import * as discord from "discord.js";
-import {OwnerCommand} from "./AbstractOwnerCommand";
+import * as bot from "../BotClient";
+import { OwnerCommand } from "./AbstractOwnerCommand";
 
 export class ListBridges extends OwnerCommand {
     public constructor() {
@@ -13,11 +13,11 @@ export class ListBridges extends OwnerCommand {
     }
 
     public async exec(message: discord.Message, args: any): Promise<void> {
-        await message.reply(this.getClient().db.getBridges()
+        let map = await Promise.all(
+            this.getClient().db.getBridges()
                 .map(async b => bot.Util.formatBridge(b.bridge_id, await this.getClient().resolveBridge(b)))
-                .join("\n")
-            , { split: true });
-
+        );
+        await message.reply(map.join("\n"), { split: true });
     }
 }
 
