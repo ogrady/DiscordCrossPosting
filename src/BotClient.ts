@@ -170,21 +170,18 @@ export class Util {
     }
 
     static formatBridge(bid: number, bridge?: ResolvedBridge): { title: string; content: string } {
-        let title = `Bridge \`${bid}\``;
-        if (bridge === undefined) {
-            return {
-                title: title,
-                content: "INVALID"
-            };
-        } else {
-            return {
-                title: title,
-                content: `Source: \`${bridge.source_guild.name}\` \`#${bridge.source_channel.name}\`\n` +
-                    `Target: \`${bridge.destination_guild.name}\` \`#${bridge.destination_channel.name}\`\n` +
-                    `Condition: \`${bridge.attribute}:${bridge.regex}\``
+        let result = {
+            title: `Bridge \`${bid}\``,
+            content: "INVALID"
+        };
 
-            };
+        if (bridge !== undefined) {
+            result.content = `Source: \`${bridge.source_guild.name}\` \`#${bridge.source_channel.name}\`\n` +
+                `Target: \`${bridge.destination_guild.name}\` \`#${bridge.destination_channel.name}\`\n` +
+                `Condition: \`${bridge.attribute}:${bridge.regex}\``;
         }
+
+        return result;
     }
 
 
