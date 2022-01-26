@@ -1,6 +1,7 @@
-import * as bot from "../BotClient";
 import * as discord from "discord.js";
-import {OwnerCommand} from "./AbstractOwnerCommand";
+import { MessageEmbed } from "discord.js";
+import * as bot from "../BotClient";
+import { OwnerCommand } from "./AbstractOwnerCommand";
 
 export class ListBridges extends OwnerCommand {
     public constructor() {
@@ -13,11 +14,15 @@ export class ListBridges extends OwnerCommand {
     }
 
     public async exec(message: discord.Message, args: any): Promise<void> {
-        await message.reply(this.getClient().db.getBridges()
+        let map = await Promise.all(
+            this.getClient().db.getBridges()
                 .map(async b => bot.Util.formatBridge(b.bridge_id, await this.getClient().resolveBridge(b)))
-                .join("\n")
-            , { split: true });
-
+        );
+        let messageEmbed = new MessageEmbed();
+        for (let mapElement of map) {
+            messageEmbed.addField(mapElement.title, mapElement.content, false);
+        }
+        await message.reply({ content: "_ _", embeds: [messageEmbed] });
     }
 }
 

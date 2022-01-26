@@ -41,7 +41,12 @@ export class BotClient extends akairo.AkairoClient {
     public readonly inhibitorHandler: akairo.InhibitorHandler;
 
     public constructor(options, dbfile) {
-        super(options, {});
+        super(options, {
+            intents: [
+                "GUILD_MESSAGES",
+                "GUILDS"
+            ]
+        });
         this.db = new db.Database(dbfile);
         this.cache = new Set<string>();
 
@@ -59,7 +64,12 @@ export class BotClient extends akairo.AkairoClient {
         this.listenerHandler.loadAll();
 
         this.on("ready", () => {
-
+            this.user?.setPresence({
+                activities: [{
+                    name: config.status,
+                    type: "WATCHING"
+                }]
+            });
         });
 
         this.db.initSchema();
@@ -89,7 +99,7 @@ export class BotClient extends akairo.AkairoClient {
         const srcGuild: discord.Guild | null = await this.guilds.resolve(bridge.source_guild);
         const dstGuild: discord.Guild | null = await this.guilds.resolve(bridge.destination_guild);
         const srcChannel: TextChannel | NewsChannel | null = await Util.findTextChannel(srcGuild, bridge.source_channel);
-        const dstChannel: TextChannel | NewsChannel | null = await Util.findTextChannel(srcGuild, bridge.destination_channel);
+        const dstChannel: TextChannel | NewsChannel | null = await Util.findTextChannel(dstGuild, bridge.destination_channel);
         if (!srcGuild) {
             console.error(`Could not find a source guild with id = ${bridge.source_guild}.`);
         }
@@ -159,10 +169,19 @@ export class Util {
         }
     }
 
-    static formatBridge(bid: number, bridge?: ResolvedBridge): string {
-        return bridge === undefined
-            ? `\`${bid}\`: INVALID`
-            : `\`${bridge.bridge_id}\`: \`${bridge.source_guild.name}#${bridge.source_channel.name}\` → \`${bridge.destination_guild.name}#${bridge.destination_channel.name}\` on condition \`${bridge.attribute}:${bridge.regex}\``;
+    static formatBridge(bid: number, bridge?: ResolvedBridge): { title: string; content: string } {
+        let result = {
+            title: `Bridge \`${bid}\``,
+            content: "INVALID"
+        };
+
+        if (bridge !== undefined) {
+            result.content = `Source: \`${bridge.source_guild.name}\` \`#${bridge.source_channel.name}\`\n` +
+                `Target: \`${bridge.destination_guild.name}\` \`#${bridge.destination_channel.name}\`\n` +
+                `Condition: \`${bridge.attribute}:${bridge.regex}\``;
+        }
+
+        return result;
     }
 
 
@@ -176,18 +195,17 @@ export class Util {
      * text, voice, or others, into one big collection.
      * Note that internally Collection.find is used, returning
      * only the first matching channel.
-     * @param client the bot client instance
      * @param g: the guild to look for the TextChannel in.
-     *           Passing a falsey value for g results in undefined.
+     *           Passing a falsey value for g results in null.
      * @param phrase: channel name or id to look for
      * @returns the TextChannel, if a channel passing the predicate was found,
-     *          or undefined if no such channel was found or g is falsey.
+     *          or null if no such channel was found or g is falsey.
      */
     static async findTextChannel(g: discord.Guild | null, phrase: string): Promise<TextChannel | NewsChannel | null> {
         let guild = await g?.fetch();
         if (guild) {
             let resolve = guild.channels.resolve(phrase) || guild.channels.cache.filter(c => c.name === phrase).first() || null;
-            if (resolve?.isText()) {
+            if (resolve?.isText() && !resolve.isThread()) {
                 return resolve;
             }
         }
