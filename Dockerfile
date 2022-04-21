@@ -1,5 +1,5 @@
 # ---- Base Node ----
-FROM node:17-alpine AS base
+FROM node:18-alpine AS base
 RUN npm install -g npm@latest
 
 # set working directory
