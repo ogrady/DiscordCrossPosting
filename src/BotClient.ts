@@ -1,7 +1,7 @@
 const config = require("../config.json");
 import * as akairo from "discord-akairo";
 import * as discord from "discord.js";
-import { NewsChannel, TextChannel } from "discord.js";
+import { ActivityType, NewsChannel, TextChannel } from "discord.js";
 import * as db from "./DB";
 
 // Valid attributesthat can be checked.
@@ -43,8 +43,8 @@ export class BotClient extends akairo.AkairoClient {
     public constructor(options, dbfile) {
         super(options, {
             intents: [
-                "GUILD_MESSAGES",
-                "GUILDS"
+                "GuildMessages",
+                "Guilds"
             ]
         });
         this.db = new db.Database(dbfile);
@@ -67,7 +67,7 @@ export class BotClient extends akairo.AkairoClient {
             this.user?.setPresence({
                 activities: [{
                     name: config.status,
-                    type: "WATCHING"
+                    type: ActivityType.Watching
                 }]
             });
         });
@@ -204,8 +204,8 @@ export class Util {
     static async findTextChannel(g: discord.Guild | null, phrase: string): Promise<TextChannel | NewsChannel | null> {
         let guild = await g?.fetch();
         if (guild) {
-            let resolve = guild.channels.resolve(phrase) || guild.channels.cache.filter(c => c.name === phrase).first() || null;
-            if (resolve?.isText() && !resolve.isThread()) {
+            const resolve = guild.channels.resolve(phrase) ?? guild.channels.cache.filter(c => c.name === phrase).first() ?? null;
+            if (resolve?.isTextBased() && !resolve.isThread() && !resolve.isVoiceBased()) {
                 return resolve;
             }
         }
