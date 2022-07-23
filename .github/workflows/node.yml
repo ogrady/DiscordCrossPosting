@@ -46,6 +46,11 @@ jobs:
         env:
           CI: true
 
+      - name: "Config"
+        run: cp config.json.example config.json
+        env:
+          CI: true
+
       - name: "Build"
         run: npm run build
         env:
