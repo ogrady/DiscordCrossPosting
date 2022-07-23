@@ -1,3 +1,7 @@
+![Node CI](https://github.com/ogrady/DiscordCrossPosting/actions/workflows/node.yml/badge.svg)
+![Docker Build CI](https://github.com/ogrady/DiscordCrossPosting/actions/workflows/docker-build.yml/badge.svg)
+![Automerge](https://github.com/ogrady/DiscordCrossPosting/actions/workflows/automerge.yml/badge.svg)
+
 # Discord Cross Poster
 ## Purpose
 Bot to cross-post messages between servers, similar to what the [announcement channels](https://support.discordapp.com/hc/en-us/articles/360032008192-Announcement-Channels-) do, but without having to be a Discord partner and with more control over what is published automatically.
