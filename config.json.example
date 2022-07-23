@@ -2,5 +2,6 @@
     "owner_ids": ["1111111111111"],
     "prefix": "!",
     "token": "xxxxxxxxxxxxxx",
-    "status": "I'm just cossposting here"
+    "client_id": "123456789",
+    "status": "I'm just crossposting here"
 }

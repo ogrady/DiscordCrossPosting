@@ -13,9 +13,7 @@
     "resolveJsonModule": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "strictNullChecks": true,
-    "useDefineForClassFields": true,
-    "experimentalDecorators": true,
+    "strictNullChecks": true
     },
     "include": [
         "./src/**/*",

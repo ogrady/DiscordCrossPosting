@@ -14,6 +14,8 @@ from the root directory.
 
 Copy the `config.json.example` to `config.json` and adjust to your liking. Tokens can be acquired from the [Developer Portal](https://discordapp.com/developers/applications/) when creating a new application.
 
+Note that the `Message Content Intent` needs to be enables for your bot application on the developer portal!
+
 ## Running
 After setting up, you can run the bot using
 

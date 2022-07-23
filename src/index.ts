@@ -1,11 +1,8 @@
 import config from '../config.json'
-import { DiscordModule, InjectDiscordClient, Once } from '@discord-nestjs/core'
-import { Module } from '@nestjs/common'
-import { Client, GatewayIntentBits, IntentsBitField } from 'discord.js'
-import { Injectable, Logger } from '@nestjs/common';
-import { BotClient } from './BotClient';
+import { GatewayIntentBits } from 'discord.js'
+import { BotClient } from './bot-client'
 
-const client = new BotClient({ intents: [GatewayIntentBits.Guilds], dbfile: './db/database.db' });
+const client = new BotClient({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent], dbfile: './db/database.db' })
 
 client.once('ready', () => {
     console.log('Starting up...')
@@ -22,10 +19,16 @@ const shutdown = () => {
     process.exit(0)
 }
 
+const main = async () => {
+    //await client.reregisterCommands()
+    client.login(config.token)
+}
+
 
 ['SIGTERM', 'SIGINT'].forEach(value => process.on(value, shutdown))
 
-client.login(config.token)
+main()
+
 
 /*
 

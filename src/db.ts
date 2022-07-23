@@ -1,7 +1,7 @@
 import * as sqlite3 from 'better-sqlite3'
 import { ChannelResolvable, GuildChannelResolvable, GuildResolvable, Snowflake } from 'discord.js'
 import * as discord from 'discord.js'
-import * as bot from 'BotClient'
+import * as bot from './bot-client'
 
 export interface Bridge {
     readonly bridge_id: number;
@@ -71,7 +71,7 @@ export class Database {
     * @param sourceChannel: the channel from which the bridges should start.
     * @returns list of qualifying bridges.
     */
-    public getBridges(sourceChannel: discord.TextChannel | undefined = undefined): Bridge[] {
+    public getBridges(sourceChannel: discord.TextChannel | discord.NewsChannel | undefined = undefined): Bridge[] {
         let predicate = ''
         let params: string[] = []
 
@@ -104,7 +104,7 @@ export class Database {
     * @param destinationChannel: channel in a guild where the messages should be bridged to. 
     * @param conditions: a list of conditions for the bridge to trigger.
     */
-    public createBridge(sourceChannel: discord.TextChannel, destinationChannel: discord.TextChannel, conditions: bot.Condition[]): void {
+    public createBridge(sourceChannel: discord.TextChannel | discord.NewsChannel, destinationChannel: discord.TextChannel | discord.NewsChannel, conditions: bot.Condition[]): void {
         return this.execute(db => db.transaction((_) => {
             db.prepare('INSERT INTO bridges(source_guild, source_channel, destination_guild, destination_channel) VALUES (?,?,?,?)')
                 .run(sourceChannel.guild.id, sourceChannel.id, destinationChannel.guild.id, destinationChannel.id)
