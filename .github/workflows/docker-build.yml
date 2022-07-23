@@ -38,7 +38,7 @@ jobs:
             ${{ runner.os }}-buildx-
       - name: Docker Buildx (build)
         run: |
-          docker buildx build \
+          cp config.json.example config.json && docker buildx build \
             --cache-from "type=local,src=/tmp/.buildx-cache" \
             --cache-to "type=local,dest=/tmp/.buildx-cache" \
             --platform linux/amd64 \
