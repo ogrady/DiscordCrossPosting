@@ -173,7 +173,7 @@ export class BotClient extends discord.Client {
     private async registerCommands(): Promise<void> {
         try {
             const commands = this.commands.mapValues(c => c.data.toJSON())
-            await this.rest.put(Routes.applicationCommands(client_id), { body: commands })
+            await this.rest.put(Routes.applicationCommands(config.client_id), { body: commands })
             console.log(`Successfully registered application commands: ${[...commands.keys()].join(', ')}`)
         } catch(e) {
             console.error(e)
@@ -317,7 +317,7 @@ export class Util {
     }
 
     static sourceIsOwner(interaction: discord.ChatInputCommandInteraction): boolean {
-        return config.owner_ids.includes(interaction.member?.user.id)
+        return config.owner_ids.includes(interaction.member!.user.id)
     }
 
     /**
