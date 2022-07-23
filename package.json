@@ -1,6 +1,6 @@
 {
   "name": "discordcrossposter",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "Bot to post messages between Discord servers.",
   "main": "index.js",
   "scripts": {
@@ -16,7 +16,6 @@
     "@discord-nestjs/core": "^4.0.2",
     "better-sqlite3": "^7.6.2",
     "command-line-args": "^5.2.1",
-    "discord-akairo": "github:discord-akairo/discord-akairo#master",
     "discord.js": "^14.0.3"
   },
   "devDependencies": {

@@ -16,6 +16,12 @@ Copy the `config.json.example` to `config.json` and adjust to your liking. Token
 
 Note that the `Message Content Intent` needs to be enables for your bot application on the developer portal!
 
+When starting for the first time, you need to first register all commands with the app. To do so, you can run 
+
+```
+node built/src/index.js --register
+```
+
 ## Running
 After setting up, you can run the bot using
 
