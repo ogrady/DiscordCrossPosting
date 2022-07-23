@@ -1,11 +1,11 @@
 import config from '../config.json'
-import * as CommandLineArgs from "command-line-args"
+import * as CommandLineArgs from 'command-line-args'
 import { GatewayIntentBits } from 'discord.js'
 import { BotClient } from './bot-client'
 
 const args = CommandLineArgs.default([
-    { name: "register", alias: "r", type: Boolean, default: false }
-]);
+    { name: 'register', alias: 'r', type: Boolean, default: false }
+])
 
 const client = new BotClient({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent], dbfile: './db/database.db' })
 

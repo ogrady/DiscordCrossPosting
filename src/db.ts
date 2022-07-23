@@ -1,5 +1,5 @@
 import * as sqlite3 from 'better-sqlite3'
-import { ChannelResolvable, GuildChannelResolvable, GuildResolvable, Snowflake } from 'discord.js'
+import { Snowflake } from 'discord.js'
 import * as discord from 'discord.js'
 import * as bot from './bot-client'
 
@@ -105,6 +105,7 @@ export class Database {
     * @param conditions: a list of conditions for the bridge to trigger.
     */
     public createBridge(sourceChannel: discord.TextChannel | discord.NewsChannel, destinationChannel: discord.TextChannel | discord.NewsChannel, conditions: bot.Condition[]): void {
+        /* eslint-disable @typescript-eslint/no-unused-vars */
         return this.execute(db => db.transaction((_) => {
             db.prepare('INSERT INTO bridges(source_guild, source_channel, destination_guild, destination_channel) VALUES (?,?,?,?)')
                 .run(sourceChannel.guild.id, sourceChannel.id, destinationChannel.guild.id, destinationChannel.id)

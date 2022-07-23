@@ -1,5 +1,5 @@
 import * as discord from 'discord.js'
-import { EmbedBuilder, PermissionFlagsBits, SlashCommandBuilder } from 'discord.js'
+import { EmbedBuilder, SlashCommandBuilder } from 'discord.js'
 import * as bot from '../bot-client'
 
 module.exports = {
@@ -8,7 +8,7 @@ module.exports = {
         .setDescription('Lists all active bridges.'),
     async execute(interaction: discord.ChatInputCommandInteraction) {
         const client = (interaction.client as bot.BotClient)
-        await interaction.deferReply();
+        await interaction.deferReply()
 
         const bridges = await Promise.all(
             client.db.getBridges().map(async b => bot.Util.formatBridge(b.bridge_id, await client.resolveBridge(b)))
@@ -20,6 +20,6 @@ module.exports = {
         } else {
             messageEmbed.addFields([{ name: '_ _', value: '_ _' }])
         }
-        await interaction.editReply({ content: '_ _', embeds: [messageEmbed] });
+        await interaction.editReply({ content: '_ _', embeds: [messageEmbed] })
     },
 }

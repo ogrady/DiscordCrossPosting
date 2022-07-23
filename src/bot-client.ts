@@ -1,14 +1,12 @@
-const config = require('../config.json')
+import * as config from '../config.json'
 import * as discord from 'discord.js'
 import { ActivityType, NewsChannel, SlashCommandBuilder, TextChannel, Routes } from 'discord.js'
 import * as db from './db'
 import * as fs from 'node:fs'
 import * as path from 'node:path'
 import { REST } from '@discordjs/rest'
-//const { REST } = require('@discordjs/rest');
-const { client_id, guildId, token } = require('../config.json')
 
-// Valid attributesthat can be checked.
+// Valid attributes that can be checked.
 // This was an algebraic sum type once,
 // but since types are erased at runtime
 // due to the compilation to untyped JS,
@@ -48,7 +46,7 @@ export class BotClient extends discord.Client {
         this.db = new db.Database(options.dbfile)
         this.cache = new Set<string>()
         this.commands = new discord.Collection()
-        this.rest = new REST({ version: '10' }).setToken(token)
+        this.rest = new REST({ version: '10' }).setToken(config.token)
         this.getters = {
             'cid': m => m.channel.id,
             'cname': m => (<discord.TextChannel>m.channel).name,
@@ -62,6 +60,7 @@ export class BotClient extends discord.Client {
 
         for (const file of commandFiles) {
             const filePath = path.join(commandsPath, file)
+            /* eslint-disable @typescript-eslint/no-var-requires */
             const command = require(filePath)
             this.commands.set(command.data.name, command)
             console.log(`Loaded ${command.data.name} command.`)
@@ -70,7 +69,7 @@ export class BotClient extends discord.Client {
         this.on('ready', () => {
             this.user?.setPresence({
                 activities: [{
-                    name: config.status ?? 'your content',
+                    name: config['status'] ?? 'your content',
                     type: ActivityType.Streaming
                 }]
             })
@@ -138,26 +137,26 @@ export class BotClient extends discord.Client {
         this.updateCache()
     }
 
-       /**
+    /**
      * Checks if the condition for a Bridge holds for the passed message.
      * @param message: the message to check.
      * @bridge bridge: the Bridge to check.
      * @returns true, if the message passes the condition of the Bridge.
      */
-        private evaluateCondition(message: discord.Message, bridge: db.Bridge): boolean {
-            let holds = false
-            if (bridge.attribute in this.getters) {
-                const targetAttribute = this.getters[bridge.attribute](message)
-                holds = new RegExp(bridge.regex).test(targetAttribute)
-            } else {
-                console.error(`Unknown attribute '${bridge.attribute}' in condition ${bridge.condition_id}`)
-            }
-            return holds
+    private evaluateCondition(message: discord.Message, bridge: db.Bridge): boolean {
+        let holds = false
+        if (bridge.attribute in this.getters) {
+            const targetAttribute = this.getters[bridge.attribute](message)
+            holds = new RegExp(bridge.regex).test(targetAttribute)
+        } else {
+            console.error(`Unknown attribute '${bridge.attribute}' in condition ${bridge.condition_id}`)
         }
+        return holds
+    }
     
-        private format(message: discord.Message): string {
-            return `**${message.member === null ? 'WebHook' : message.member!.displayName}** (\`${message.guild!.name}#${(<discord.TextChannel>message.channel).name}\`):\n${message.content}`
-        }
+    private format(message: discord.Message): string {
+        return `**${message.member === null ? 'WebHook' : message.member!.displayName}** (\`${message.guild!.name}#${(<discord.TextChannel>message.channel).name}\`):\n${message.content}`
+    }
 
     /**
      * Loads all unique source channels from the database.
@@ -183,8 +182,7 @@ export class BotClient extends discord.Client {
     
     private async unregisterCommands(): Promise<void> {
         try {
-            const commands = this.commands.mapValues(c => c.data.toJSON())
-            await this.rest.put(Routes.applicationCommands(client_id), { body: [] })
+            await this.rest.put(Routes.applicationCommands(config.client_id), { body: [] })
             console.log('Successfully deleted all application commands.')
         } catch(e) {
             console.error(e)
@@ -255,6 +253,7 @@ export abstract class BotCommand {
      * @param required list of required attributes.
      * @returns list of missing attributes; each in a more readable form as described above.
      */
+    /* eslint-disable @typescript-eslint/no-explicit-any */
     public static gatherMissingArguments(args: any, required: string[]) {
         return required
             .filter(r => !Object.keys(args).includes(r) || args[r] === undefined || args[r] === null)  // find missing ones
