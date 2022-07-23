@@ -1,8 +1,10 @@
-const config = require("../config.json");
-import * as akairo from "discord-akairo";
-import * as discord from "discord.js";
-import { ActivityType, NewsChannel, TextChannel } from "discord.js";
-import * as db from "./DB";
+const config = require('../config.json')
+import { DiscordCommand, DiscordModule } from '@discord-nestjs/core'
+import * as akairo from 'discord-akairo'
+import * as discord from 'discord.js'
+import { ActivityType, NewsChannel, TextChannel } from 'discord.js'
+import { Module } from '@nestjs/common'
+import * as db from './DB'
 
 // Valid attributesthat can be checked.
 // This was an algebraic sum type once,
@@ -10,11 +12,11 @@ import * as db from "./DB";
 // due to the compilation to untyped JS,
 // this is now an enum instead. Sigh.
 export enum Attribute {
-    UID = "uid",
-    UNAME = "uname",
-    TEXT = "text",
-    CID = "cid",
-    CNAME = "cname"
+    UID = 'uid',
+    UNAME = 'uname',
+    TEXT = 'text',
+    CID = 'cid',
+    CNAME = 'cname'
 }
 
 export interface Condition {
@@ -33,47 +35,46 @@ export interface ResolvedBridge {
     readonly regex: string;
 }
 
-export class BotClient extends akairo.AkairoClient {
-    public readonly db: db.Database;
-    public readonly cache: Set<string>; // caches input channels, which are unique Snowflakes, to speed up when messages should be discarded
-    public readonly commandHandler: akairo.CommandHandler;
-    public readonly listenerHandler: akairo.ListenerHandler;
-    public readonly inhibitorHandler: akairo.InhibitorHandler;
+export class BotClient extends discord.Client { //extends akairo.AkairoClient {
+    public readonly db: db.Database
+    public readonly cache: Set<string> // caches input channels, which are unique Snowflakes, to speed up when messages should be discarded
 
-    public constructor(options, dbfile) {
-        super(options, {
-            intents: [
-                "GuildMessages",
-                "Guilds"
-            ]
-        });
-        this.db = new db.Database(dbfile);
-        this.cache = new Set<string>();
+    /*
+    public readonly commandHandler: akairo.CommandHandler
+    public readonly listenerHandler: akairo.ListenerHandler
+    public readonly inhibitorHandler: akairo.InhibitorHandler
+    */
 
+    public constructor(options: discord.ClientOptions & { dbfile: string }) {
+        super(options)
+        this.db = new db.Database(options.dbfile)
+        this.cache = new Set<string>()
+
+        /*
         this.commandHandler = new akairo.CommandHandler(this, {
             directory: './built/commands/',
             prefix: config.prefix,
             commandUtil: true,
             commandUtilLifetime: 600000
-        });
-        this.commandHandler.loadAll();
+        })
+        this.commandHandler.loadAll()
 
         this.listenerHandler = new akairo.ListenerHandler(this, {
             directory: './built/listeners/'
-        });
-        this.listenerHandler.loadAll();
+        })
+        this.listenerHandler.loadAll()
 
-        this.on("ready", () => {
+        this.on('ready', () => {
             this.user?.setPresence({
                 activities: [{
                     name: config.status,
                     type: ActivityType.Watching
                 }]
-            });
-        });
-
-        this.db.initSchema();
-        this.updateCache();
+            })
+        })
+    */
+        this.db.initSchema()
+        this.updateCache()
     }
 
     /**
@@ -82,9 +83,9 @@ export class BotClient extends akairo.AkairoClient {
      * dismissed for which no bridge exists.
      */
     public updateCache(): void {
-        this.cache.clear();
+        this.cache.clear()
         for (const b of this.db.getBridges(undefined)) {
-            this.cache.add(b.source_channel);
+            this.cache.add(b.source_channel)
         }
     }
 
@@ -96,21 +97,21 @@ export class BotClient extends akairo.AkairoClient {
      * @returns ResolvedBridge if possible, else undefined.
      */
     public async resolveBridge(bridge: db.Bridge): Promise<ResolvedBridge | undefined> {
-        const srcGuild: discord.Guild | null = await this.guilds.resolve(bridge.source_guild);
-        const dstGuild: discord.Guild | null = await this.guilds.resolve(bridge.destination_guild);
-        const srcChannel: TextChannel | NewsChannel | null = await Util.findTextChannel(srcGuild, bridge.source_channel);
-        const dstChannel: TextChannel | NewsChannel | null = await Util.findTextChannel(dstGuild, bridge.destination_channel);
+        const srcGuild: discord.Guild | null = await this.guilds.resolve(bridge.source_guild)
+        const dstGuild: discord.Guild | null = await this.guilds.resolve(bridge.destination_guild)
+        const srcChannel: TextChannel | NewsChannel | null = await Util.findTextChannel(srcGuild, bridge.source_channel)
+        const dstChannel: TextChannel | NewsChannel | null = await Util.findTextChannel(dstGuild, bridge.destination_channel)
         if (!srcGuild) {
-            console.error(`Could not find a source guild with id = ${bridge.source_guild}.`);
+            console.error(`Could not find a source guild with id = ${bridge.source_guild}.`)
         }
         if (!dstGuild) {
-            console.error(`Could not find a destination guild with id = ${bridge.destination_guild}.`);
+            console.error(`Could not find a destination guild with id = ${bridge.destination_guild}.`)
         }
         if (!srcChannel) {
-            console.error(`Could not find a source channel with id = ${bridge.source_channel}.`);
+            console.error(`Could not find a source channel with id = ${bridge.source_channel}.`)
         }
         if (!dstChannel) {
-            console.error(`Could not find a destination channel with id = ${bridge.destination_channel}.`);
+            console.error(`Could not find a destination channel with id = ${bridge.destination_channel}.`)
         }
         return srcChannel === null || dstChannel === null
             ? undefined
@@ -123,7 +124,7 @@ export class BotClient extends akairo.AkairoClient {
                 condition_id: bridge.condition_id,
                 attribute: bridge.attribute,
                 regex: bridge.regex
-            };
+            }
     }
 }
 
@@ -133,16 +134,33 @@ export class BotClient extends akairo.AkairoClient {
  * as it grants access to the DB and so on and casting
  * manually every time just clutters the code a lot.
  */
-export class BotCommand extends akairo.Command {
-    constructor(id: string, options: akairo.CommandOptions) {
-        super(id, options);
-    }
-
+export abstract class BotCommand {
     /**
-     * @returns the casted bot client.
+     * Derives a list of attributes that are missing in an object.
+     * Result is given in a more readable form:
+     * sourceGuild => Source Guild
+     * sourceguild => Sourceguild
+     * sourceGuildWithIDAppended => Source Guild With ID Appended
+     * @param args argument object.
+     * @param required list of required attributes.
+     * @returns list of missing attributes; each in a more readable form as described above.
      */
-    public getClient(): BotClient {
-        return <BotClient>this.client;
+    protected static gatherMissingArguments(args: any, required: string[]) {
+        return required
+            .filter(r => !Object.keys(args).includes(r))  // find missing ones
+            .map(a => a.split(/(?=[A-Z])/)  // split on capital letters
+                .reduce((acc, e, i) => {  // handle all-caps parts, like "ID"
+                    const last = acc[acc.length - 1] ?? ''
+                    if (i > 0 && e.toUpperCase() === e && last.toUpperCase() === last) {
+                        acc[acc.length - 1] += e
+                    } else {
+                        acc.push(e)
+                    }
+                    return acc
+                }, [] as string[])
+                .map(s => s.charAt(0).toUpperCase() + s.slice(1))  // capitalise
+                .join(' ')
+            )
     }
 }
 
@@ -155,7 +173,7 @@ export class Util {
      * Used to chunk messages before sending them when
      * prepending the "header".
      */
-    static readonly MAX_MESSAGE_LENGTH: number = 2000;
+    static readonly MAX_MESSAGE_LENGTH: number = 2000
 
     /**
      * Generator function that creates
@@ -163,30 +181,30 @@ export class Util {
      * incremented by one.
      */
     static* counter(): Generator {
-        let i = 0;
+        let i = 0
         while (true) {
-            yield i++;
+            yield i++
         }
     }
 
     static formatBridge(bid: number, bridge?: ResolvedBridge): { title: string; content: string } {
-        let result = {
+        const result = {
             title: `Bridge \`${bid}\``,
-            content: "INVALID"
-        };
+            content: 'INVALID'
+        }
 
         if (bridge !== undefined) {
             result.content = `Source: \`${bridge.source_guild.name}\` \`#${bridge.source_channel.name}\`\n` +
                 `Target: \`${bridge.destination_guild.name}\` \`#${bridge.destination_channel.name}\`\n` +
-                `Condition: \`${bridge.attribute}:${bridge.regex}\``;
+                `Condition: \`${bridge.attribute}:${bridge.regex}\``
         }
 
-        return result;
+        return result
     }
 
 
     static async findGuild(client: BotClient, term: string): Promise<discord.Guild | null> {
-        return client.guilds.resolve(term) || client.guilds.cache.filter(value => value.name === term).first() || null;
+        return client.guilds.resolve(term) || client.guilds.cache.filter(value => value.name === term).first() || null
     }
 
     /**
@@ -202,14 +220,14 @@ export class Util {
      *          or null if no such channel was found or g is falsey.
      */
     static async findTextChannel(g: discord.Guild | null, phrase: string): Promise<TextChannel | NewsChannel | null> {
-        let guild = await g?.fetch();
+        const guild = await g?.fetch()
         if (guild) {
-            const resolve = guild.channels.resolve(phrase) ?? guild.channels.cache.filter(c => c.name === phrase).first() ?? null;
+            const resolve = guild.channels.resolve(phrase) ?? guild.channels.cache.filter(c => c.name === phrase).first() ?? null
             if (resolve?.isTextBased() && !resolve.isThread() && !resolve.isVoiceBased()) {
-                return resolve;
+                return resolve
             }
         }
-        return null;
+        return null
     }
 
     /**
@@ -222,16 +240,19 @@ export class Util {
      *              Size will be normalised to be at least 1.
      */
     static chunk(s: string, size: number): string[] {
-        size = Math.max(1, size);
-        const chunks: string[] = [];
-        let i: number = 0;
+        size = Math.max(1, size)
+        const chunks: string[] = []
+        let i = 0
         while (i < s.length) {
-            chunks.push(s.substring(i, i + size));
-            i += size;
+            chunks.push(s.substring(i, i + size))
+            i += size
         }
-        return chunks;
+        return chunks
     }
 
+
+
     private constructor() {
+        // static class
     }
 }
