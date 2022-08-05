@@ -33,6 +33,7 @@ export interface ResolvedBridge {
     readonly condition_id: number;
     readonly attribute: Attribute;
     readonly regex: string;
+    readonly mentions: string[];
 }
 
 export class BotClient extends discord.Client {
@@ -118,7 +119,8 @@ export class BotClient extends discord.Client {
     
                             if (c !== undefined && c instanceof discord.TextChannel) {
                                 for (const chunk of Util.chunk(this.format(message))) {
-                                    await c.send({ content: chunk, allowedMentions: { parse: ['roles', 'users'] } })
+                                    //await c.send({ content: chunk, allowedMentions: { parse: ['roles', 'users'] } })
+                                    await c.send({ content: chunk, allowedMentions: { parse: b.mentions.map(m => m as discord.MessageMentionTypes) } })
                                 }
                                 postedChannels.add(b.destination_channel)
     
@@ -231,7 +233,8 @@ export class BotClient extends discord.Client {
                 destination_channel: dstChannel,
                 condition_id: bridge.condition_id,
                 attribute: bridge.attribute,
-                regex: bridge.regex
+                regex: bridge.regex,
+                mentions: bridge.mentions
             }
     }
 }
@@ -305,7 +308,8 @@ export class Util {
         if (bridge !== undefined) {
             result.content = `Source: \`${bridge.source_guild.name}\` \`#${bridge.source_channel.name}\`\n` +
                 `Target: \`${bridge.destination_guild.name}\` \`#${bridge.destination_channel.name}\`\n` +
-                `Condition: \`${bridge.attribute}:${bridge.regex}\``
+                `Condition: \`${bridge.attribute}:${bridge.regex}\`\n` +
+                `Mentions: \`${bridge.mentions.length > 0 ? bridge.mentions : '--'}\``
         }
 
         return result

@@ -1,12 +1,12 @@
 {
   "name": "discordcrossposter",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Bot to post messages between Discord servers.",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc",
-    "run": "node ./built/index.js",
+    "start": "node ./built/src/index.js",
     "lint": "eslint src --ext .ts",
     "lint:fix": "npm run lint -- --fix"
   },

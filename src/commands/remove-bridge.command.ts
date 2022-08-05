@@ -1,3 +1,4 @@
+import { BotClient } from 'bot-client'
 import { SlashCommandBuilder } from 'discord.js'
 
 module.exports = module.exports = {
@@ -11,7 +12,8 @@ module.exports = module.exports = {
     async execute(interaction) {
         await interaction.deferReply()
         const bid = interaction.options.getInteger('bridge-id')
-        this.getClient().db.removeBridge(bid)
+        const client = interaction.client as BotClient
+        client.db.removeBridge(bid)
         await interaction.editReply(`Removed bridge with id = \`${bid}\``)
     },
 }

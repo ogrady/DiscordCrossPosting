@@ -12,6 +12,7 @@ export interface Bridge {
     readonly condition_id: number,
     readonly attribute: bot.Attribute, 
     readonly regex: string
+    readonly mentions: string[]
 }
 
 export class Database {
@@ -53,6 +54,12 @@ export class Database {
             FOREIGN KEY(attribute) REFERENCES attributes(name)
         )`,
 
+            `CREATE TABLE IF NOT EXISTS bridge_mentions(
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            bridge_id INTEGER,
+            mention TEXT,
+            FOREIGN KEY(bridge_id) REFERENCES bridges(bridge_id) ON DELETE CASCADE
+        )`,
             `INSERT OR IGNORE INTO attributes(name) 
          VALUES ('uid'), ('uname'), ('text'), ('cid'), ('cname')`
         ]
@@ -80,7 +87,7 @@ export class Database {
             params = [sourceChannel.id]
         }
         
-        return this.execute(db => db.prepare(`
+        return (this.execute(db => db.prepare(`
             SELECT 
                 b.bridge_id,
                 b.source_guild,
@@ -89,13 +96,21 @@ export class Database {
                 b.destination_channel,
                 c.condition_id,
                 c.attribute,
-                c.regex
+                c.regex,
+                group_concat(m.mention) AS mentions
             FROM 
                 bridges AS b 
                 JOIN bridge_conditions AS c 
                   ON b.bridge_id = c.bridge_id
+                LEFT JOIN bridge_mentions AS m
+                  ON b.bridge_id = m.bridge_id
             ${predicate}
-        `).all(params))
+            GROUP BY 
+                b.bridge_id
+        `).all(params)) ?? []).map(row => {
+            row.mentions = (row.mentions ?? '').split(',').filter(x => !!x)
+            return row
+        })
     }
 
     /**
@@ -104,17 +119,26 @@ export class Database {
     * @param destinationChannel: channel in a guild where the messages should be bridged to. 
     * @param conditions: a list of conditions for the bridge to trigger.
     */
-    public createBridge(sourceChannel: discord.TextChannel | discord.NewsChannel, destinationChannel: discord.TextChannel | discord.NewsChannel, conditions: bot.Condition[]): void {
+    public createBridge(sourceChannel: discord.TextChannel | discord.NewsChannel, destinationChannel: discord.TextChannel | discord.NewsChannel, conditions: bot.Condition[], mentions: string[] = []): void {
         /* eslint-disable @typescript-eslint/no-unused-vars */
         return this.execute(db => db.transaction((_) => {
             db.prepare('INSERT INTO bridges(source_guild, source_channel, destination_guild, destination_channel) VALUES (?,?,?,?)')
                 .run(sourceChannel.guild.id, sourceChannel.id, destinationChannel.guild.id, destinationChannel.id)
             const bridgeId = db.prepare('SELECT last_insert_rowid() AS id').get().id
-            console.log(bridgeId)
             for(const c of conditions) {
                 db.prepare('INSERT INTO bridge_conditions(bridge_id, attribute, regex) VALUES(?,?,?)')
                     .run(bridgeId, c.attribute.toLowerCase(), c.regex)    
-            }                
+            }
+            for(let m of mentions) {
+                // if we ever choose to change to more fine-grained mentions, this is where to change it.
+                if (m === 'here') {
+                    m = 'everyone'
+                }
+                if (['everyone', 'roles', 'users'].includes(m)) {
+                    db.prepare('INSERT INTO bridge_mentions(bridge_id, mention) VALUES(?,?)')
+                    .run(bridgeId, m)    
+                }                
+            }
         })(null)
         )
     }

@@ -63,6 +63,7 @@ Creates a new bridge from one server + channel to another. The parameters are as
 	2. `uname` the display name of the user who posted the message. Use if you want to only forward messages when their poster has a certain name. See below for RegEx usage.
 	3. `text` the text of the message. Useful if you only want to forward messages when they feature certain content. See below for RegEx usage.
 6. The regular expression which the descriminator must match. If anything should match, just pass `.`.
+7. Mentions that should be preserved. These can be `users`, `roles`, or `everyone`. That means for example, if you preserve `roles` on a bridge, the bot will attempt to actually mention role in their forwarded post. Elsewise, roles will just appear as plain text without causing a notification for users. Note that `everyone` will preserve both `@everyone` and `@here`. You can combine these mentions by passing multiple values with a comma separator. I.e. passing `users,everyone` for this parameter will preserve mentions for users and `@everyone`, but not for roles.
 
 If any of the parameters in a command contains whitespace, you need to put qutoes around them.
 

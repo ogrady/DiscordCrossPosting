@@ -14,6 +14,7 @@ const shutdown = () => {
     console.log('Closing.')
     if (client) {
         client.destroy()
+        console.log('Client destroyed.')
     }
     process.exit(0)
 }
