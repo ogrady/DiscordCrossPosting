@@ -71,7 +71,7 @@ If any of the parameters in a command contains whitespace, you need to put qutoe
 Messages are only forwarded, if their discriminator matches a [regular expression](https://regexr.com/). The most simple case would be to have all messages from server `A` in channel `foo` forwarded to channel `bar` on server `B`:
 
 ```
-createbridge A foo B bar text .
+createbridge A foo B bar text:.*
 ```
 
 But it could also be used to only forward messages that start with a trigger word, like "ATTENTION":
