@@ -13,7 +13,7 @@
   "author": "Len",
   "license": "ISC",
   "dependencies": {
-    "@discord-nestjs/core": "^4.1.1",
+    "@discord-nestjs/core": "^4.2.1",
     "better-sqlite3": "^7.6.2",
     "command-line-args": "^5.2.1",
     "discord.js": "^14.2.0"
