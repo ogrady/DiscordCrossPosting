@@ -17,7 +17,7 @@ RUN npm install --omit=dev --loglevel info
 # ---- Build ----
 FROM dependencies AS build
 # copy production node_modules
-RUN npm install --omit=dev --loglevel info
+RUN npm install --only=dev --loglevel info
 
 COPY . .
 RUN cp config.json.example ./data/config.json && npm run build && rm ./data/config.json
