@@ -1,4 +1,4 @@
-import { BotClient } from 'bot-client'
+import { BotClient } from '../bot-client'
 import { SlashCommandBuilder } from 'discord.js'
 
 module.exports = module.exports = {
