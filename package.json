@@ -1,6 +1,6 @@
 {
   "name": "discordcrossposter",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "Bot to post messages between Discord servers.",
   "main": "index.js",
   "scripts": {
