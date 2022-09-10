@@ -1,4 +1,4 @@
-import config from '../config.json'
+import { config } from './config'
 import * as CommandLineArgs from 'command-line-args'
 import { GatewayIntentBits } from 'discord.js'
 import { BotClient } from './bot-client'
@@ -7,7 +7,7 @@ const args = CommandLineArgs.default([
     { name: 'register', alias: 'r', type: Boolean, default: false }
 ])
 
-const client = new BotClient({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent], dbfile: './db/database.db' })
+const client = new BotClient({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent], dbfile: './data/database.db', config: config })
 
 const shutdown = () => {
     console.info('SIGTERM signal received.')
@@ -30,5 +30,4 @@ const main = async (args) => {
 
 
 ['SIGTERM', 'SIGINT'].forEach(value => process.on(value, shutdown))
-
 main(args)

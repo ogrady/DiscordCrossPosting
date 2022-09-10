@@ -1,10 +1,10 @@
-import * as config from '../config.json'
 import * as discord from 'discord.js'
 import { ActivityType, NewsChannel, SlashCommandBuilder, TextChannel, Routes } from 'discord.js'
 import * as db from './db'
 import * as fs from 'node:fs'
 import * as path from 'node:path'
 import { REST } from '@discordjs/rest'
+import { Config } from './config'
 
 // Valid attributes that can be checked.
 // This was an algebraic sum type once,
@@ -37,17 +37,19 @@ export interface ResolvedBridge {
 }
 
 export class BotClient extends discord.Client {
+    public readonly config: Config
     public readonly db: db.Database
     public readonly cache: Set<string> // caches input channels, which are unique Snowflakes, to speed up when messages should be discarded
     public readonly commands: discord.Collection<string, { data: SlashCommandBuilder, execute: (interaction: discord.Interaction) => void }>
     private getters: { [key: string]: ((m: discord.Message) => string) }
 
-    public constructor(options: discord.ClientOptions & { dbfile: string }) {
+    public constructor(options: discord.ClientOptions & { dbfile: string, config: Config }) {
         super(options)
         this.db = new db.Database(options.dbfile)
+        this.config = options.config
         this.cache = new Set<string>()
         this.commands = new discord.Collection()
-        this.rest = new REST({ version: '10' }).setToken(config.token)
+        this.rest = new REST({ version: '10' }).setToken(this.config.token)
         this.getters = {
             'cid': m => m.channel.id,
             'cname': m => (<discord.TextChannel>m.channel).name,
@@ -70,7 +72,7 @@ export class BotClient extends discord.Client {
         this.on('ready', () => {
             this.user?.setPresence({
                 activities: [{
-                    name: config['status'] ?? 'your content',
+                    name: this.config.status ?? 'your content',
                     type: ActivityType.Streaming
                 }]
             })
@@ -85,7 +87,7 @@ export class BotClient extends discord.Client {
                         // as all commands of this bot are restricted to owners, we can do this check centralised.
                         // If we ever were to allow a more finely-grained permissions system, this had to be put
                         // into the each command.
-                        if(Util.sourceIsOwner(interaction)) {
+                        if(this.sourceIsOwner(interaction)) {
                             await command.execute(interaction)
                         } else {
                             await interaction.reply({ content: 'You are not allowed to use this command!', ephemeral: true })    
@@ -175,7 +177,7 @@ export class BotClient extends discord.Client {
     private async registerCommands(): Promise<void> {
         try {
             const commands = this.commands.mapValues(c => c.data.toJSON())
-            await this.rest.put(Routes.applicationCommands(config.client_id), { body: commands })
+            await this.rest.put(Routes.applicationCommands(this.config.client_id), { body: commands })
             console.log(`Successfully registered application commands: ${[...commands.keys()].join(', ')}`)
         } catch(e) {
             console.error(e)
@@ -184,7 +186,7 @@ export class BotClient extends discord.Client {
     
     private async unregisterCommands(): Promise<void> {
         try {
-            await this.rest.put(Routes.applicationCommands(config.client_id), { body: [] })
+            await this.rest.put(Routes.applicationCommands(this.config.client_id), { body: [] })
             console.log('Successfully deleted all application commands.')
         } catch(e) {
             console.error(e)
@@ -236,6 +238,10 @@ export class BotClient extends discord.Client {
                 regex: bridge.regex,
                 mentions: bridge.mentions
             }
+    }
+
+    private sourceIsOwner(interaction: discord.ChatInputCommandInteraction): boolean {
+        return this.config.owner_ids.includes(interaction.member!.user.id)
     }
 }
 
@@ -318,10 +324,6 @@ export class Util {
 
     static async findGuild(client: BotClient, term: string): Promise<discord.Guild | null> {
         return client.guilds.resolve(term) || client.guilds.cache.filter(value => value.name === term).first() || null
-    }
-
-    static sourceIsOwner(interaction: discord.ChatInputCommandInteraction): boolean {
-        return config.owner_ids.includes(interaction.member!.user.id)
     }
 
     /**
