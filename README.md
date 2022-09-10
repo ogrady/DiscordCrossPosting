@@ -16,7 +16,7 @@ npm i && npm run build
 
 from the root directory.
 
-Copy the `config.json.example` to `config.json` and adjust to your liking. Tokens can be acquired from the [Developer Portal](https://discordapp.com/developers/applications/) when creating a new application.
+Copy the `config.json.example` to `data/config.json` and adjust to your liking. Tokens can be acquired from the [Developer Portal](https://discordapp.com/developers/applications/) when creating a new application.
 
 Note that the `Message Content Intent` needs to be enabled for your bot application on the developer portal!
 
@@ -87,3 +87,5 @@ createbridge A foo B bar uname "\[EPIC\]"
 ```
 would only forward messages from players with the tag "[EPIC]" in their display name.
 
+## Docker
+You can mount a volume on `/app/data` which should contain your `config.json` and your `database.db` file.
