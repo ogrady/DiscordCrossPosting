@@ -1,13 +1,10 @@
 {
     "compilerOptions": {
-        "outDir": "./built",
+        "rootDir": "./src",
+        "outDir": "./build",
         "allowJs": true,
         "target": "es6",
-        "baseUrl": "./src",
         "sourceMap": true,
-        "paths": {
-            "config.json": ["../config.json"]
-        },
     "module": "commonjs",
     "lib": ["es6", "es2017", "dom"],
     "resolveJsonModule": true,

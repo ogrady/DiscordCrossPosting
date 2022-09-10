@@ -1,4 +1,4 @@
-built/
+build/
 *.db
 config.json
 # Created by https://www.gitignore.io/api/node
